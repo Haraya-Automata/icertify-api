@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Form</title>
+</head>
+
+<body>
+  <form action="/" method="post" enctype="multipart/form-data">
+    <div>
+      <label for="names">Names: </label> <br>
+      <textarea id="names" name="names" cols=" 30" rows="10"></textarea>
+    </div>
+    <div>
+      <input type="file" name="certificate" accept=".pdf">
+    </div>
+    <br><br>
+    <div>
+      <label for="font">Select a font:</label>
+      <select name="font" id="font">
+        <option value="Courier">Courier</option>
+        <option value="Courier-Bold">Courier-Bold</option>
+        <option value="Courier-BoldOblique">Courier-BoldOblique</option>
+        <option value="Courier-Oblique">Courier-Oblique</option>
+        <option value="Helvetica">Helvetica</option>
+        <option value="Helvetica-Bold">Helvetica-Bold</option>
+        <option value="Helvetica-BoldOblique">Helvetica-BoldOblique</option>
+        <option value="Helvetica-Oblique">Helvetica-Oblique</option>
+        <option value="Symbol">Symbol</option>
+        <option value="Times-Roman">Times-Roman</option>
+        <option value="Times-Bold">Times-Bold</option>
+        <option value="Times-BoldItalic">Times-BoldItalic</option>
+        <option value="Times-Italic">Times-Italic</option>
+        <option value="ZapfDingbats">ZapfDingbats</option>
+      </select>
+    </div>
+    <br>
+    <div>
+      <label for="size">Font Size:</label>
+      <input type="number" name="size" id="size">
+    </div>
+    <br>
+    <div>
+      <label for="xName">Position of Name (X):</label>
+      <input type="number" name="xName" id="xName">
+    </div>
+    <br>
+    <div>
+      <label for="yName">Position of Name (Y):</label>
+      <input type="number" name="yName" id="yName">
+    </div>
+    <br>
+    <div>
+      <label for="xQr">Position of QR (X):</label>
+      <input type="number" name="xQr" id="xQr">
+    </div>
+    <br>
+    <div>
+      <label for="yQr">Position of QR (Y):</label>
+      <input type="number" name="yQr" id="yQr">
+    </div>
+    <dir>
+      <button id="submit" type="submit">Submit</button>
+    </dir>
+  </form>
+</body>
+
+</html>
