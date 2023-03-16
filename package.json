@@ -4,7 +4,7 @@
   "description": "A server for our e-certificate-maker application.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/Haraya-Automata/e-certificate-maker-server#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
     "nodemon": "^2.0.21",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.1"
