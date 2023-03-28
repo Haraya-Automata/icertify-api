@@ -1,42 +1,74 @@
-// This script is the entry point of requests
-
-// modules for setting up the server
-const express = require('express');
-const cors = require('cors');
-
-const { fileUpload, validateInput } = require('./lib/input-validation');
+const { timestamp, verify, validateInput } = require('./lib/utilities');
 const { createCertificate } = require('./lib/create-certificate');
 
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+const { create } = require('qrcode');
+
 const app = express();
+const upload = multer({ storage: multer.memoryStorage() });
 
-// set port to where our server will listen for requests
-const PORT = 3000;
+let count = 0;
+const clients = [];
+const PORT = process.env.PORT || 3001;
 
-// starts server so it can now listen for requests
-// this also has a function to log time
-app.listen(PORT, () => {
-  const time = new Date();
-  console.log(`server has started in port: ${PORT} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`);
-});
+app.listen(PORT, () => console.log(`${timestamp()}: (INFO) server has started in port ${PORT}`));
 
-// middleware to allow requests from our e-certificate-maker-site 
-app.use(cors({ origin: 'https://haraya-automata.github.io/e-certificate-maker-site/' }));
+app.use(cors({ origin: 'https://icertify.vercel.app/' }));
 
-// middlewares for parsing json and www-form-urlencoded from requests
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// remove both after testing
+app.use(express.static('e-certificate-maker-site'));
 
-// middleware for sending test form 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + "/test/index.html");
-});
+app.get('/', (req, res) => res.redirect('/generate.html'));
 
-// middleware where form data from the user gets routed
-// upload.single() argument must be the name of file form field to process
-// it has an array of middlewares that is executed in proper order
-app.post('/', [fileUpload.single('certificate'), validateInput, createCertificate],
-  // middleware for sending back response to client
-  (req, res) => {
-    res.send(`<iframe src="${res.certificate}" width="1200" height="1200"></iframe>`);
-    console.log('response sent');
+app.get('/logging/:id', sendMessage);
+
+app.post('/verify', [upload.none(), verify]);
+
+app.post('/generate', [logger, upload.single('file'),
+  validateInput, createCertificate]);
+
+function logger(req, res, next) {
+  clients.push({
+    id: count,
+    messages: [],
+    newMessage: function (message) {
+      this.messages.push(message);
+    },
+    intervalID: 0
   });
+
+  res.client = clients[count++];
+  res.client.newMessage('server accepted request');
+  res.send(`/logging/${res.client.id}`);
+
+  console.log(`${timestamp()}: (INFO) a client has connected`)
+  next();
+};
+
+function sendMessage(req, res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  res.messageCount = 1;
+
+  let client = clients[req?.params?.id];
+  client.intervalID = setInterval(() => {
+    const client = clients[req?.params?.id];
+    if (client?.messages?.at(0) === 'END') {
+      clearInterval(client?.intervalID); 
+      count--;
+    }
+    if (client?.messages?.length) {
+      res.write(`retry: ${1500}\n`);
+      res.write(`data: ${client.messages.shift()}\n\n`);
+      res.write(`id: ${res.messageCount++}\n`);
+    }
+  }, 300);
+}
+
+
+
