@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => console.log(`${timestamp()}: (INFO) server has started in port ${PORT}`));
 
-app.use(cors({ origin: 'https://icertify.vercel.app/' }));
+app.use(cors({ origin: 'https://icertify.vercel.app/', credentials: true }));
 
 // remove both after testing
 app.use(express.static('e-certificate-maker-site'));
