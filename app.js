@@ -4,7 +4,6 @@ const { createCertificate } = require('./lib/create-certificate');
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const { create } = require('qrcode');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -15,12 +14,7 @@ const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => console.log(`${timestamp()}: (INFO) server has started in port ${PORT}`));
 
-app.use(cors({ origin: 'https://icertify.vercel.app/', credentials: true }));
-
-// remove both after testing
-app.use(express.static('e-certificate-maker-site'));
-
-app.get('/', (req, res) => res.redirect('/generate.html'));
+app.use(cors({ origin: 'https://icertify.vercel.app', credentials: true }));
 
 app.get('/logging/:id', sendMessage);
 
