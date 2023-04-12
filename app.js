@@ -14,7 +14,7 @@ let started = false;
 
 const PORT = process.env.PORT || 3001;
 const corsOptions = {
-  origin: ['https://icertify.vercel.app', 'https://api.cron-job.org',
+  origin: ['https://icertify.vercel.app', 'https://console.cron-job.org',
     'http://localhost:5500']
 };
 
@@ -30,7 +30,7 @@ app.get('/logging/:id', sendMessage);
 
 app.post('/login', [upload.none(), login]);
 
-app.post('/generate', [ logger, upload.single('file'),
+app.post('/generate', [logger, upload.single('file'),
   validateInput, createCertificate]);
 
 // middlewares that need access to global variables
@@ -39,6 +39,7 @@ function allow(req, res, next) {
   if (corsOptions.origin.includes(origin)) {
     return next();
   }
+  console.log(`(INFO) a request with the origin: ${origin}\nhas been blocked`)
   res.status(404).send('Origin not allowed');
 }
 
@@ -83,6 +84,7 @@ function logger(req, res, next) {
   });
 
   res.client = getClient(id);
+  console.log(res.client);
   res.client.newMessage('server accepted request');
   // res.send(`/logging/${res.client.id}`); 
   res.status(200).end(); // remove after testing
