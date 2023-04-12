@@ -39,14 +39,14 @@ function allow(req, res, next) {
   if (corsOptions.origin.includes(origin)) {
     return next();
   }
-  console.log(`(INFO) a request with the origin: ${origin}\nhas been blocked`)
+  console.log(`(INFO) a request has been blocked with the origin:`, origin)
   res.status(404).send('Origin not allowed');
 }
 
 function start(req, res) {
   if (!started) {
     started = true;
-    console.log('(INFO) client has started the server');
+    console.log('(INFO) server has started');
   }
   res.status(200).end('Server started');
 }
@@ -84,7 +84,6 @@ function logger(req, res, next) {
   });
 
   res.client = getClient(id);
-  console.log(res.client);
   res.client.newMessage('server accepted request');
   // res.send(`/logging/${res.client.id}`); 
   res.status(200).end(); // remove after testing
