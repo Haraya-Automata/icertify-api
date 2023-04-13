@@ -13,7 +13,9 @@ let clients = [];
 let started = false;
 
 const PORT = process.env.PORT || 3001;
-const corsOptions = { origin: ['https://icertify.vercel.app'] };
+const corsOptions = {
+  origin: ['https://icertify.vercel.app', 'http://localhost:5500']
+};
 
 app.listen(PORT, () => console.log(`(INFO) server has started in port ${PORT}`));
 
@@ -30,21 +32,21 @@ app.post('/login', [upload.none(), login]);
 app.post('/generate', [logger, upload.single('file'),
   validateInput, createCertificate]);
 
-// middlewares that need access to global variables
 function allow(req, res, next) {
-  const origin = req.get('origin')
+  const origin = req.get('origin');
   if (corsOptions.origin.includes(origin)) {
     return next();
   }
-  res.status(404).end();
+  console.log('(INFO) a request has been blocked');
+  res.status(404).send('Origin not allowed');
 }
 
 function start(req, res) {
   if (!started) {
     started = true;
-    console.log('(INFO) client has started the server');
+    console.log('(INFO) server has started');
   }
-  res.end();
+  res.status(200).end('Server started');
 }
 
 function getClient(id) {
@@ -58,7 +60,8 @@ function removeClient(client) {
       console.log(`(INFO) a client has disconnected ${id}`);
 
       clearInterval(client.intervalID);
-      clients =  clients.filter(client => client.id !== id);
+      console.log(client);
+      clients = clients.filter(client => client.id !== id);
 
       console.log('(INFO) clients connected', clients);
     }
@@ -68,7 +71,7 @@ function removeClient(client) {
 function logger(req, res, next) {
   console.log('(INFO) a client has connected');
   const id = crypto.randomUUID();
-  
+
   clients.push({
     id: id,
     intervalID: 0,
@@ -80,7 +83,7 @@ function logger(req, res, next) {
 
   res.client = getClient(id);
   res.client.newMessage('server accepted request');
-  res.send(`/logging/${res.client.id}`);
+  res.send(`/logging/${res.client.id}`); 
   next();
 };
 
