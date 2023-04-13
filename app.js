@@ -10,7 +10,6 @@ const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
 let clients = [];
-let started = false;
 
 const PORT = process.env.PORT || 3001;
 const corsOptions = {
@@ -23,30 +22,20 @@ app.use(cors(corsOptions));
 
 app.use(allow);
 
-app.get('/start', start);
-
 app.get('/logging/:id', sendMessage);
 
 app.post('/login', [upload.none(), login]);
 
-app.post('/generate', [logger, upload.single('file'),
+app.post('/generate', [upload.single('file'), logger,
   validateInput, createCertificate]);
 
 function allow(req, res, next) {
   const origin = req.get('origin');
-  if (corsOptions.origin.includes(origin)) {
-    return next();
+  if (!corsOptions.origin.includes(origin)) {
+    console.log('(INFO) a request has been blocked');
+    res.status(404).send(JSON.stringify({ message: 'Origin is not allowed', server: 'started' }));
   }
-  console.log('(INFO) a request has been blocked');
-  res.status(404).send('Origin not allowed');
-}
-
-function start(req, res) {
-  if (!started) {
-    started = true;
-    console.log('(INFO) server has started');
-  }
-  res.status(200).end('Server started');
+  next();
 }
 
 function getClient(id) {
