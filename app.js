@@ -10,6 +10,7 @@ const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
 let clients = [];
+let started = false;
 
 const PORT = process.env.PORT || 3001;
 const corsOptions = {
@@ -17,6 +18,8 @@ const corsOptions = {
 };
 
 app.listen(PORT, () => console.log(`(INFO) server has started in port ${PORT}`));
+
+app.get('/start', start);
 
 app.use(cors(corsOptions));
 
@@ -29,13 +32,20 @@ app.post('/login', [upload.none(), login]);
 app.post('/generate', [upload.single('file'), logger,
   validateInput, createCertificate]);
 
+function start(req, res) {
+  if (!started) {
+    console.log('(INFO) server has started');
+    started = true;
+  }
+  res.status(200).send('Server has started');
+}
+
 function allow(req, res, next) {
   const origin = req.get('origin');
-  if (!corsOptions.origin.includes(origin)) {
-    console.log('(INFO) a request has been blocked');
-    res.status(404).send(JSON.stringify({ message: 'Origin is not allowed', server: 'started' }));
-  }
-  next();
+  if (corsOptions.origin.includes(origin)) return next();
+  
+  console.log('(INFO) a request has been blocked');
+  res.status(404).send('Origin not allowed');
 }
 
 function getClient(id) {
@@ -44,7 +54,7 @@ function getClient(id) {
 
 function removeClient(client) {
   return function () {
-    let id = client?.id;
+    let id = client.id;
     if (getClient(id)) {
       console.log(`(INFO) a client has disconnected ${id}`);
 
@@ -72,7 +82,7 @@ function logger(req, res, next) {
 
   res.client = getClient(id);
   res.client.newMessage('server accepted request');
-  res.send(`/logging/${res.client.id}`); 
+  res.send(`/logging/${res.client.id}`);
   next();
 };
 
@@ -90,7 +100,7 @@ function sendMessage(req, res) {
 
   client.intervalID = setInterval(() => {
     if (client.messages?.at(0) === 'END') {
-      removeClient(client)();
+      removeClient(client)()
     }
 
     if (client.messages.length) {
@@ -98,7 +108,7 @@ function sendMessage(req, res) {
       res.write(`data: ${client.messages.shift()}\n\n`);
       res.write(`id: ${++res.messageCount}\n`);
     }
-  }, 300);
+  }, 200);
   console.log(clients);
 }
 
