@@ -5,9 +5,15 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
+const limiter = rateLimit({
+  windowMs: 5 * 60 * 1000, 
+  max: 10, 
+  standardHeaders: true, 
+})
 
 let clients = [];
 let started = false;
@@ -24,6 +30,8 @@ app.get('/start', start);
 app.use(cors(corsOptions));
 
 app.use(allow);
+
+app.use(limiter);
 
 app.get('/logging/:id', sendMessage);
 
@@ -46,25 +54,6 @@ function allow(req, res, next) {
   
   console.log('(INFO) a request has been blocked');
   res.status(404).send('Origin not allowed');
-}
-
-function getClient(id) {
-  return clients.find(client => client.id === id);
-}
-
-function removeClient(client) {
-  return function () {
-    let id = client.id;
-    if (getClient(id)) {
-      console.log(`(INFO) a client has disconnected ${id}`);
-
-      clearInterval(client.intervalID);
-      console.log(client);
-      clients = clients.filter(client => client.id !== id);
-
-      console.log('(INFO) clients connected', clients);
-    }
-  }
 }
 
 function logger(req, res, next) {
@@ -111,6 +100,26 @@ function sendMessage(req, res) {
   }, 200);
   console.log(clients);
 }
+
+function getClient(id) {
+  return clients.find(client => client.id === id);
+}
+
+function removeClient(client) {
+  return function () {
+    let id = client.id;
+    if (getClient(id)) {
+      console.log(`(INFO) a client has disconnected ${id}`);
+
+      clearInterval(client.intervalID);
+      console.log(client);
+      clients = clients.filter(client => client.id !== id);
+
+      console.log('(INFO) clients connected', clients);
+    }
+  }
+}
+
 
 
 
