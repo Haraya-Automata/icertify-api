@@ -10,9 +10,9 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 const limiter = rateLimit({
-  windowMs: 5 * 60 * 1000, 
-  max: 10, 
-  standardHeaders: true, 
+  windowMs: 8 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
 })
 
 let clients = [];
@@ -51,7 +51,7 @@ function start(req, res) {
 function allow(req, res, next) {
   const origin = req.get('origin');
   if (corsOptions.origin.includes(origin)) return next();
-  
+
   console.log('(INFO) a request has been blocked');
   res.status(404).send('Origin not allowed');
 }
@@ -98,24 +98,28 @@ function sendMessage(req, res) {
       res.write(`id: ${++res.messageCount}\n`);
     }
   }, 200);
-  console.log(clients);
+  console.log('(INFO) clients connected', getIDs());
 }
 
 function getClient(id) {
   return clients.find(client => client.id === id);
 }
 
+function getIDs() {
+  return clients.map(client => client.id);
+}
+
 function removeClient(client) {
   return function () {
     let id = client.id;
     if (getClient(id)) {
-      console.log(`(INFO) a client has disconnected ${id}`);
-
       clearInterval(client.intervalID);
-      console.log(client);
-      clients = clients.filter(client => client.id !== id);
+      console.log(`(INFO) a client has disconnected ${client.id}`);
+      console.log(`(INFO) setInterval destroyed? ${client.intervalID._destroyed}`);
+      console.log(`(INFO) messages: ${client.messages}`);
 
-      console.log('(INFO) clients connected', clients);
+      clients = clients.filter(client => client.id !== id);
+      console.log('(INFO) clients connected', getIDs());
     }
   }
 }
