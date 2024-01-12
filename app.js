@@ -1,4 +1,4 @@
-const { login, validateInput } = require('./lib/utilities');
+const { validateInput } = require('./lib/utilities');
 const { createCertificate } = require('./lib/create-certificate');
 
 const express = require('express');
@@ -34,8 +34,6 @@ app.use(allow);
 app.use(limiter);
 
 app.get('/logging/:id', sendMessage);
-
-app.post('/login', [upload.none(), login]);
 
 app.post('/generate', [upload.single('file'), logger,
   validateInput, createCertificate]);
